@@ -1,0 +1,5 @@
+{
+  "name": "Fire Department Unit Manager",
+  "description": "A web application to manage fire department units, their status, and personnel in real-time. It allows for updating unit assignments and generating PDF reports of the current fleet status.",
+  "requestFramePermissions": []
+}
