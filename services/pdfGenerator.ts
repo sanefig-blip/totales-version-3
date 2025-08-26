@@ -1,18 +1,19 @@
-import { jsPDF } from 'jspdf';
+
+import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { AppState } from '../types';
 
-// Define a type for the doc object with autotable properties
-// The autoTable function will add `lastAutoTable` to the doc instance.
-interface jsPDFWithPlugin extends jsPDF {
-  lastAutoTable: {
-    finalY: number;
-  };
+// Augment the jsPDF type directly to include the autoTable plugin property
+declare module 'jspdf' {
+  interface jsPDF {
+    lastAutoTable: {
+      finalY: number;
+    };
+  }
 }
 
-
 export const generatePdf = (state: AppState) => {
-  const doc = new jsPDF() as jsPDFWithPlugin;
+  const doc = new jsPDF();
 
   const groupedStations = state.stations.reduce((acc, station) => {
     const zone = station.zone || 'UNIDADES ESPECIALES';
