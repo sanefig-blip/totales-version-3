@@ -1,5 +1,5 @@
-
-import jsPDF from 'jspdf';
+// Fix: Use named import for jsPDF to aid TypeScript's module resolution for augmentation.
+import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { AppState } from '../types';
 

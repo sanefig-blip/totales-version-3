@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAppData } from '../../hooks/useAppData';
 import type { Unit } from '../../types';
@@ -9,12 +8,29 @@ import { PlusIcon, EditIcon, TrashIcon } from '../icons';
 export const NomencladorModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { state, dispatch } = useAppData();
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<UnitStatus | 'all'>('all');
 
-  const filteredUnits = state.units.filter(unit =>
-    unit.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    unit.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    state.stations.find(s => s.id === unit.stationId)?.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUnits = state.units.filter(unit => {
+    const statusMatch = statusFilter === 'all' || unit.status === statusFilter;
+    if (!statusMatch) {
+      return false;
+    }
+
+    if (!searchTerm) {
+      return true;
+    }
+
+    const lowercasedSearchTerm = searchTerm.toLowerCase();
+    const station = state.stations.find(s => s.id === unit.stationId);
+    const stationName = station ? station.name.toLowerCase() : '';
+
+    return (
+      unit.id.toLowerCase().includes(lowercasedSearchTerm) ||
+      (unit.internalId && unit.internalId.toLowerCase().includes(lowercasedSearchTerm)) ||
+      unit.type.toLowerCase().includes(lowercasedSearchTerm) ||
+      stationName.includes(lowercasedSearchTerm)
+    );
+  });
     
   const handleAddUnit = () => {
     const newId = prompt("Ingrese el ID de la nueva unidad (ej. IV-1234):");
@@ -44,15 +60,28 @@ export const NomencladorModal: React.FC<{ onClose: () => void }> = ({ onClose })
 
   return (
     <BaseModal title="Nomenclador de Unidades" onClose={onClose}>
-      <div className="flex justify-between mb-4">
-        <input
-          type="text"
-          placeholder="Buscar por nombre, ID, interno, estación, tipo..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full md:w-1/2 bg-gray-900 border border-gray-600 rounded-md p-2 focus:ring-red-500 focus:border-red-500"
-        />
-        <button onClick={handleAddUnit} className="flex items-center gap-2 px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 transition-colors font-semibold">
+      <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
+        <div className="flex items-center gap-4 flex-grow flex-wrap md:flex-nowrap">
+          <input
+            type="text"
+            placeholder="Buscar por ID, tipo, estación..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-grow bg-gray-900 border border-gray-600 rounded-md p-2 focus:ring-red-500 focus:border-red-500 min-w-[200px]"
+          />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as UnitStatus | 'all')}
+            className="bg-gray-900 border border-gray-600 rounded-md p-2 focus:ring-red-500 focus:border-red-500 w-full md:w-auto"
+          >
+            <option value="all">Todos los Estados</option>
+            {Object.values(UnitStatus).map(status => (
+                <option key={status} value={status}>{status}</option>
+            ))}
+          </select>
+        </div>
+
+        <button onClick={handleAddUnit} className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 transition-colors font-semibold">
           <PlusIcon className="w-5 h-5"/>
           <span>Agregar Unidad</span>
         </button>
